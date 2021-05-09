@@ -29,9 +29,11 @@ pub async fn download_course(cli_options: &CliOptions, course: &Course<'_>) -> R
 
     fs::create_dir_all(&folder_path)?;
 
-    let mut count = 0;
+    let mut count = cli_options.skip_count.unwrap_or(0) as usize;
 
-    for video in &course.videos {
+    for video in course.videos.iter()
+    /* .skip(count) */ // We already skip server-side
+    {
         let file = fs::OpenOptions::new()
             .create(true)
             .write(true)
@@ -79,7 +81,7 @@ pub async fn download_course(cli_options: &CliOptions, course: &Course<'_>) -> R
         println!(
             "  Got {:3}/{:3}: {}",
             count,
-            course.videos.len(),
+            course.videos.len() + cli_options.skip_count.unwrap_or(0) as usize,
             video.title
         );
 
