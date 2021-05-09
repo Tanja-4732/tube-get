@@ -16,3 +16,11 @@ pub const LICENSE: &'static str = concat![
     "Copyright 2021 Bernd-L; All rights reserved.\n",
     "Licensed under the AGPL 3.0 <https://www.gnu.org/licenses/agpl-3.0.en.html>"
 ];
+
+/// The base URL
+pub const BASE_URL: &'static str = "https://tube.tugraz.at";
+
+/// The mp4 mimetype
+pub const MP4_MIME: &'static str = "video/mp4";
+
+pub const HIGH_QUALITY: &'static str = "high";

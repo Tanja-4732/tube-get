@@ -1,7 +1,12 @@
 mod cli;
 mod constants;
+mod extractor;
+mod types;
 
-fn main() {
+use anyhow::Result;
+
+#[tokio::main]
+async fn main() -> Result<()> {
     // The working directory
     let pwd = std::env::current_dir()
         .unwrap()
@@ -19,6 +24,19 @@ fn main() {
     // Try to extract the desired configuration from the arg-matches
     let cli_options = cli::get_options(matches)?;
 
-    // Make a new client for issuing HTTP(S) requests
-    let client = reqwest::Client::new();
+    let client = extractor::make_client()?;
+
+    let episodes_data = extractor::get_episodes(
+        &client,
+        cli_options.skip_count.unwrap_or(0),
+        cli_options.limit_count.unwrap_or(99999),
+        cli_options.uuid,
+    )
+    .await?;
+
+    let course = extractor::extract_course_data(&episodes_data)?;
+
+    dbg!(course);
+
+    Ok(())
 }

@@ -2,11 +2,11 @@ use crate::constants;
 use clap::{App, Arg, ArgMatches};
 use core::panic;
 use regex::Regex;
-use reqwest::Url;
+use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct CliOptions {
-    pub url: Url,
+    pub uuid: Uuid,
     pub destination: String,
     pub no_download: bool,
     pub verbosity: u64,
@@ -27,8 +27,8 @@ pub fn configure_parser(default_path: &str) -> App {
         .about(constants::ABOUT)
         .after_help(constants::LICENSE)
         .args(&[
-            Arg::with_name("URL")
-                .help("The root URL you want to crawl & download")
+            Arg::with_name("UUID")
+                .help("The UUID of the course you want to crawl & download")
                 .required(true)
                 .index(1),
             Arg::with_name("destination")
@@ -102,12 +102,12 @@ pub fn get_options(matches: ArgMatches) -> Result<CliOptions, anyhow::Error> {
     let make_regex = |name: &str| {
         matches.value_of(name).and_then(|v| match Regex::new(v) {
             Ok(regex) => Some(regex),
-            Err(err) => panic!(&format!("{:?}", err)),
+            Err(err) => panic!("{}", &format!("{:?}", err)),
         })
     };
 
     Ok(CliOptions {
-        url: Url::parse(matches.value_of("URL").unwrap())?,
+        uuid: matches.value_of("UUID").unwrap().parse()?,
         destination: matches.value_of("destination").unwrap().to_owned(),
         no_download: matches.is_present("disable download"),
         verbosity: matches.occurrences_of("verbosity"),
