@@ -1,4 +1,5 @@
 mod cli;
+mod constants;
 
 fn main() {
     // The working directory
