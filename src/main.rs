@@ -1,5 +1,6 @@
 mod cli;
 mod constants;
+mod download;
 mod extractor;
 mod types;
 
@@ -36,7 +37,9 @@ async fn main() -> Result<()> {
 
     let course = extractor::extract_course_data(&episodes_data)?;
 
-    dbg!(course);
+    download::download_course(&cli_options, &course).await?;
+
+    // download::progress();
 
     Ok(())
 }

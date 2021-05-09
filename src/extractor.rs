@@ -1,10 +1,13 @@
 use anyhow::Result;
-use rayon::prelude::*;
+use indicatif::{ParallelProgressIterator, ProgressBar};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use reqwest::{cookie::Jar, Client, Url};
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::{cli::CliOptions, constants, types::episodes::EpisodesData};
+use std::convert::TryInto;
+
+use crate::{constants, types::episodes::EpisodesData};
 
 pub async fn get_episodes(
     client: &Client,
@@ -12,6 +15,8 @@ pub async fn get_episodes(
     limit: u64,
     uuid: Uuid,
 ) -> Result<EpisodesData> {
+    println!("Fetch JSON from the API...");
+
     let url = format!(
         "https://tube.tugraz.at/search/episode.json?limit={limit}&offset={offset}&sid={uuid}",
         limit = limit,
@@ -35,10 +40,15 @@ pub fn make_client() -> Result<Client> {
 }
 
 pub fn extract_course_data(data: &EpisodesData) -> Result<Course> {
+    println!("Extracting data...");
+
+    let pb = ProgressBar::new(data.search_results.result.len().try_into().unwrap());
+
     let videos = data
         .search_results
         .result
         .par_iter()
+        .progress_with(pb)
         .map(|result| Video {
             url: &result
                 .mediapackage
