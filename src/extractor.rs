@@ -27,14 +27,11 @@ pub async fn get_episodes(
     Ok(client.get(url).send().await?.json::<EpisodesData>().await?)
 }
 
-pub fn make_client() -> Result<Client> {
+pub fn make_client(token: &str) -> Result<Client> {
     let url = Url::parse(&constants::BASE_URL)?;
 
     let jar = Jar::default();
-    jar.add_cookie_str(
-        "JSESSIONID=node0fy5phk65e0ni1m40w0n3xgka01174409.node0	",
-        &url,
-    );
+    jar.add_cookie_str(&format!("JSESSIONID={}", token), &url);
 
     Ok(Client::builder().cookie_provider(jar.into()).build()?)
 }

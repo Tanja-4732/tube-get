@@ -1,18 +1,20 @@
 use anyhow::Result;
 use indicatif::{
-    MultiProgress, ParallelProgressIterator, ProgressBar, ProgressIterator, ProgressStyle,
+    MultiProgress,
+    ProgressBar,
+    ProgressStyle,
+    // ParallelProgressIterator, ProgressIterator,
 };
 use io::Write;
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use reqwest::{cookie::Jar, header, Client, Url};
+// use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use reqwest::{header, Client};
 
-use std::convert::TryInto;
 use std::fs;
 use std::io;
 
 use crate::{cli::CliOptions, extractor::Course};
 
-pub async fn download_course(cli_options: &CliOptions, course: &Course<'_>) -> Result<()> {
+pub async fn download_course(cli_options: &CliOptions<'_>, course: &Course<'_>) -> Result<()> {
     println!("Downloading course {}", course.title);
 
     let multibar = MultiProgress::new();
@@ -79,7 +81,7 @@ pub async fn download_course(cli_options: &CliOptions, course: &Course<'_>) -> R
 
         count += 1;
         println!(
-            "  Got {:3}/{:3}: {}",
+            "  Finished {:3}/{:3}: {}",
             count,
             course.videos.len() + cli_options.skip_count.unwrap_or(0) as usize,
             video.title

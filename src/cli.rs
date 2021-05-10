@@ -1,11 +1,13 @@
 use crate::constants;
+use anyhow::anyhow;
 use clap::{App, Arg, ArgMatches};
 use core::panic;
 use regex::Regex;
 use uuid::Uuid;
 
 #[derive(Debug)]
-pub struct CliOptions {
+pub struct CliOptions<'a> {
+    pub token: &'a str,
     pub uuid: Uuid,
     pub destination: String,
     pub no_download: bool,
@@ -27,10 +29,14 @@ pub fn configure_parser(default_path: &str) -> App {
         .about(constants::ABOUT)
         .after_help(constants::LICENSE)
         .args(&[
+            Arg::with_name("token")
+                .help("Your login token (JSESSIONID)")
+                .required(true)
+                .index(1),
             Arg::with_name("UUID")
                 .help("The UUID of the course you want to crawl & download")
                 .required(true)
-                .index(1),
+                .index(2),
             Arg::with_name("destination")
                 .help("The path to which to write the downloaded files to")
                 .default_value(default_path)
@@ -98,7 +104,7 @@ pub fn configure_parser(default_path: &str) -> App {
     app
 }
 
-pub fn get_options(matches: ArgMatches) -> Result<CliOptions, anyhow::Error> {
+pub fn get_options<'a>(matches: &'a ArgMatches) -> Result<CliOptions<'a>, anyhow::Error> {
     let make_regex = |name: &str| {
         matches.value_of(name).and_then(|v| match Regex::new(v) {
             Ok(regex) => Some(regex),
@@ -107,6 +113,7 @@ pub fn get_options(matches: ArgMatches) -> Result<CliOptions, anyhow::Error> {
     };
 
     Ok(CliOptions {
+        token: matches.value_of("token").ok_or(anyhow!("Missing token"))?,
         uuid: matches.value_of("UUID").unwrap().parse()?,
         destination: matches.value_of("destination").unwrap().to_owned(),
         no_download: matches.is_present("disable download"),

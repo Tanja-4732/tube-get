@@ -23,9 +23,9 @@ async fn main() -> Result<()> {
     println!("{}\n", constants::LICENSE);
 
     // Try to extract the desired configuration from the arg-matches
-    let cli_options = cli::get_options(matches)?;
+    let cli_options = cli::get_options(&matches)?;
 
-    let client = extractor::make_client()?;
+    let client = extractor::make_client(cli_options.token)?;
 
     let episodes_data = extractor::get_episodes(
         &client,

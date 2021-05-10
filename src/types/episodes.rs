@@ -184,7 +184,7 @@ pub struct Attachment {
     pub mimetype: String,
     pub tags: Tags3,
     pub url: String,
-    pub size: i64,
+    pub size: Option<i64>,
     pub additional_properties: Option<AdditionalProperties>,
 }
 
