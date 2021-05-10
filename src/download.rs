@@ -40,7 +40,11 @@ pub async fn download_course(cli_options: &CliOptions<'_>, course: &Course<'_>) 
             .create(true)
             .write(true)
             .append(false)
-            .open(folder_path.clone().join(video.title.to_string() + ".mp4"))?;
+            .open(
+                folder_path
+                    .clone()
+                    .join(video.title.to_string().replace("/", "_") + ".mp4"),
+            )?;
 
         let client = Client::new();
 
