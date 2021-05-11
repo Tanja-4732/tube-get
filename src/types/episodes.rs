@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -15,7 +15,25 @@ pub struct SearchResults {
     pub total: i64,
     pub search_time: i64,
     pub query: String,
+    #[serde(deserialize_with = "one_or_more")]
     pub result: Vec<Result>,
+}
+
+fn one_or_more<'de, D>(deserializer: D) -> std::result::Result<Vec<Result>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum OneOrMore {
+        One(Result),
+        More(Vec<Result>),
+    }
+
+    Ok(match OneOrMore::deserialize(deserializer)? {
+        OneOrMore::One(the_one) => vec![the_one],
+        OneOrMore::More(the_more) => the_more,
+    })
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

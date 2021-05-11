@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use indicatif::{ParallelProgressIterator, ProgressBar};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use reqwest::{cookie::Jar, Client, Url};
@@ -24,7 +24,11 @@ pub async fn get_episodes(
         uuid = uuid.to_string()
     );
 
-    Ok(client.get(url).send().await?.json::<EpisodesData>().await?)
+    let text = client.get(url).send().await?.text().await?;
+
+    serde_json::from_str(&text).map_err(|_| {
+        anyhow!("Couldn't parse JSON from the API. Is your login token (still) valid?")
+    })
 }
 
 pub fn make_client(token: &str) -> Result<Client> {
