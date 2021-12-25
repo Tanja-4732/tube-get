@@ -88,7 +88,9 @@ pub struct Mediapackage {
     pub metadata: Metadata,
     pub attachments: Attachments,
     pub publications: String,
-    pub creators: Option<Creators>,
+    // I got a response with [0, "text"] once instead of just "text"
+    // TODO handle an array with both strings and numbers for some reason
+    // pub creators: Option<Creators>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
