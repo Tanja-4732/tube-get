@@ -15,19 +15,37 @@ pub struct SearchResults {
     pub total: i64,
     pub search_time: i64,
     pub query: String,
-    #[serde(deserialize_with = "one_or_more")]
+    #[serde(deserialize_with = "one_or_more_result")]
     pub result: Vec<Result>,
 }
 
-fn one_or_more<'de, D>(deserializer: D) -> std::result::Result<Vec<Result>, D::Error>
+fn one_or_more_result<'de, D>(deserializer: D) -> std::result::Result<Vec<Result>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    // TODO care about the following warning: large size difference between variants
+    enum OneOrMore {
+        One(Result),
+        More(Vec<Result>),
+    }
+
+    Ok(match OneOrMore::deserialize(deserializer)? {
+        OneOrMore::One(the_one) => vec![the_one],
+        OneOrMore::More(the_more) => the_more,
+    })
+}
+
+fn one_or_more_string<'de, D>(deserializer: D) -> std::result::Result<Vec<String>, D::Error>
 where
     D: Deserializer<'de>,
 {
     #[derive(Deserialize)]
     #[serde(untagged)]
     enum OneOrMore {
-        One(Result),
-        More(Vec<Result>),
+        One(String),
+        More(Vec<String>),
     }
 
     Ok(match OneOrMore::deserialize(deserializer)? {
@@ -48,7 +66,7 @@ pub struct Result {
     pub dc_is_part_of: String,
     pub oc_mediapackage: String,
     pub media_type: String,
-    pub keywords: ::serde_json::Value,
+    pub keywords: Keywords,
     pub modified: String,
     pub score: f64,
     pub segments: Option<Segments>,
@@ -95,11 +113,14 @@ pub struct Track {
     pub video: Option<Video>,
     pub live: bool,
     pub transport: Option<String>,
+    pub size: Option<i64>,
+    pub master: Option<bool>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Tags {
+    #[serde(deserialize_with = "one_or_more_string")]
     pub tag: Vec<String>,
 }
 
@@ -136,18 +157,11 @@ pub struct Encoder {
 pub struct Video {
     pub id: String,
     pub device: String,
-    pub encoder: Encoder2,
+    pub encoder: Encoder,
     pub framecount: i64,
-    pub bitrate: i64,
+    pub bitrate: f64,
     pub framerate: f64,
     pub resolution: String,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Encoder2 {
-    #[serde(rename = "type")]
-    pub type_field: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -163,17 +177,11 @@ pub struct Catalog {
     #[serde(rename = "type")]
     pub type_field: String,
     pub mimetype: String,
-    pub tags: Tags2,
+    pub tags: Tags,
     pub url: String,
     pub checksum: Option<Checksum2>,
     #[serde(rename = "ref")]
     pub ref_field: Option<String>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Tags2 {
-    pub tag: ::serde_json::Value,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -200,16 +208,26 @@ pub struct Attachment {
     #[serde(rename = "ref")]
     pub ref_field: Option<String>,
     pub mimetype: String,
-    pub tags: Tags3,
+    pub tags: Tags,
     pub url: String,
     pub size: Option<i64>,
     pub additional_properties: Option<AdditionalProperties>,
+    pub checksum: Option<Checksum3>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Tags3 {
+pub struct TagsOfAttatchment {
     pub tag: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Checksum3 {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    #[serde(rename = "$")]
+    pub field: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -230,6 +248,13 @@ pub struct Property {
 #[serde(rename_all = "camelCase")]
 pub struct Creators {
     pub creator: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Keywords {
+    #[serde(deserialize_with = "one_or_more_string")]
+    pub keywords: Vec<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

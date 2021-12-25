@@ -32,12 +32,17 @@ async fn main() -> Result<()> {
         cli_options.skip_count.unwrap_or(0),
         cli_options.limit_count.unwrap_or(99999),
         cli_options.uuid,
+        cli_options.verbosity,
     )
     .await?;
 
     let course = extractor::extract_course_data(&episodes_data)?;
 
-    download::download_course(&cli_options, &course).await?;
+    if !cli_options.no_download {
+        download::download_course(&cli_options, &course).await?;
+    } else {
+        println!("{:#?}", course);
+    }
 
     // download::progress();
 

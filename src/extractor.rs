@@ -7,13 +7,17 @@ use uuid::Uuid;
 
 use std::convert::TryInto;
 
-use crate::{constants, types::episodes::EpisodesData};
+use crate::{
+    constants,
+    types::{episodes::EpisodesData, oof},
+};
 
 pub async fn get_episodes(
     client: &Client,
     offset: u64,
     limit: u64,
     uuid: Uuid,
+    verbosity: u64,
 ) -> Result<EpisodesData> {
     println!("Fetch JSON from the API...");
 
@@ -26,13 +30,21 @@ pub async fn get_episodes(
 
     let text = client.get(url).send().await?.text().await?;
 
-    serde_json::from_str(&text).map_err(|_| {
-        anyhow!("Couldn't parse JSON from the API. Is your login token (still) valid?")
+    serde_json::from_str(&text).map_err(|e| {
+        if verbosity >= 1 {
+            println!("{}", &text);
+        }
+
+        if serde_json::from_str::<oof::Root>(&text).is_ok() {
+            anyhow!("Is your login token (still) valid? Please provide a recent JSESSIONID cookie.")
+        } else {
+            anyhow!("Couldn't parse JSON from the API. Unknown error: {}", e)
+        }
     })
 }
 
 pub fn make_client(token: &str) -> Result<Client> {
-    let url = Url::parse(&constants::BASE_URL)?;
+    let url = Url::parse(constants::BASE_URL)?;
 
     let jar = Jar::default();
     jar.add_cookie_str(&format!("JSESSIONID={}", token), &url);

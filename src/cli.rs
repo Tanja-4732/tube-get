@@ -113,7 +113,9 @@ pub fn get_options<'a>(matches: &'a ArgMatches) -> Result<CliOptions<'a>, anyhow
     };
 
     Ok(CliOptions {
-        token: matches.value_of("token").ok_or(anyhow!("Missing token"))?,
+        token: matches
+            .value_of("token")
+            .ok_or_else(|| anyhow!("Missing token"))?,
         uuid: matches.value_of("UUID").unwrap().parse()?,
         destination: matches.value_of("destination").unwrap().to_owned(),
         no_download: matches.is_present("disable download"),

@@ -76,7 +76,7 @@ pub async fn download_course(cli_options: &CliOptions<'_>, course: &Course<'_>) 
         while let Some(chunk) = download.chunk().await? {
             progress_bar.inc(chunk.len() as u64); // Increase ProgressBar by chunk size
             progress_bar.tick();
-            writer.write(&chunk)?; // Write chunk to output file
+            writer.write_all(&chunk)?; // Write chunk to output file
         }
 
         progress_bar.finish();

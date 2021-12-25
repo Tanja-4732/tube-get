@@ -1,26 +1,26 @@
 // The name of the application
-pub const NAME: &'static str = "tube-get";
+pub const NAME: &str = "tube-get";
 
 /// The main author of the application
-pub const AUTHOR: &'static str = "Bernd-L <git@bernd.pw>";
+pub const AUTHOR: &str = "Bernd-L <git@bernd.pw>";
 
 /// The semantic-version string of the application
-pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Describes the application (i.e. its use cases) in a short phrase
-pub const ABOUT: &'static str =
+pub const ABOUT: &str =
     "A Rust tool for recursively crawling & downloading videos from TU Graz TUbe";
 
 /// The licence notice (AGPL 3) of the application
-pub const LICENSE: &'static str = concat![
+pub const LICENSE: &str = concat![
     "Copyright 2021 Bernd-L; All rights reserved.\n",
     "Licensed under the AGPL 3.0 <https://www.gnu.org/licenses/agpl-3.0.en.html>"
 ];
 
 /// The base URL
-pub const BASE_URL: &'static str = "https://tube.tugraz.at";
+pub const BASE_URL: &str = "https://tube.tugraz.at";
 
 /// The mp4 mimetype
-pub const MP4_MIME: &'static str = "video/mp4";
+pub const MP4_MIME: &str = "video/mp4";
 
-pub const HIGH_QUALITY: &'static str = "high";
+pub const HIGH_QUALITY: &str = "high";
