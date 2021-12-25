@@ -9,9 +9,11 @@ use io::Write;
 // use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use reqwest::{header, Client};
 
+use std::fmt::Display;
 use std::fs;
 use std::io;
 
+use crate::types::episodes::TrackType;
 use crate::{cli::CliOptions, extractor::Course};
 
 pub async fn download_course(cli_options: &CliOptions<'_>, course: &Course<'_>) -> Result<()> {
@@ -40,11 +42,7 @@ pub async fn download_course(cli_options: &CliOptions<'_>, course: &Course<'_>) 
             .create(true)
             .write(true)
             .append(false)
-            .open(
-                folder_path
-                    .clone()
-                    .join(video.title.to_string().replace("/", "_") + ".mp4"),
-            )?;
+            .open(folder_path.clone().join(create_video_file_name(video)))?;
 
         let client = Client::new();
 
@@ -99,4 +97,19 @@ pub async fn download_course(cli_options: &CliOptions<'_>, course: &Course<'_>) 
     println!("Download complete.");
 
     Ok(())
+}
+
+fn create_video_file_name(video: &crate::extractor::Video) -> String {
+    video.title.to_string().replace("/", "_") + "_" + &video.video_type.to_string() + ".mp4"
+}
+
+impl Display for TrackType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let lower = match self {
+            TrackType::Presenter => "presenter",
+            TrackType::Presentation => "presentation",
+        };
+
+        f.write_str(lower)
+    }
 }

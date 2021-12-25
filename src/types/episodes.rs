@@ -60,18 +60,19 @@ pub struct Result {
     pub id: String,
     pub org: String,
     pub mediapackage: Mediapackage,
-    pub dc_extent: i64,
-    pub dc_title: String,
-    pub dc_created: String,
-    pub dc_is_part_of: String,
-    pub oc_mediapackage: String,
-    pub media_type: String,
-    pub keywords: Keywords,
-    pub modified: String,
-    pub score: f64,
-    pub segments: Option<Segments>,
-    pub dc_creator: Option<String>,
-    pub dc_spatial: Option<String>,
+    // TODO uncomment the lines below
+    // pub dc_extent: i64,
+    // pub dc_title: String,
+    // pub dc_created: String,
+    // pub dc_is_part_of: String,
+    // pub oc_mediapackage: String,
+    // pub media_type: String,
+    // pub keywords: Keywords,
+    // pub modified: String,
+    // pub score: f64,
+    // pub segments: Option<Segments>,
+    // pub dc_creator: Option<String>,
+    // pub dc_spatial: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -96,25 +97,45 @@ pub struct Media {
     pub track: Vec<Track>,
 }
 
+/// A candidate for downloading
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Track {
     pub id: String,
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: TrackType,
     #[serde(rename = "ref")]
     pub ref_field: String,
     pub mimetype: String,
+    /// Contains info on the videos quality
     pub tags: Tags,
     pub url: String,
     pub checksum: Option<Checksum>,
     pub duration: i64,
-    pub audio: Option<Audio>,
-    pub video: Option<Video>,
-    pub live: bool,
+    // TODO uncomment the lines below
+    // /// Should be `Some` for the things we care about
+    // pub audio: Option<Audio>,
+    // /// Should be `Some` for the things we care about
+    // pub video: Option<Video>,
+    // pub live: bool,
+    /// Should be `None` for the things we care about
     pub transport: Option<String>,
-    pub size: Option<i64>,
-    pub master: Option<bool>,
+    // pub size: Option<i64>,
+    // pub master: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Copy)]
+pub enum TrackType {
+    #[serde(rename = "presenter/delivery")]
+    Presenter,
+    #[serde(rename = "presentation/delivery")]
+    Presentation,
+}
+
+impl Default for TrackType {
+    fn default() -> Self {
+        TrackType::Presentation
+    }
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -213,12 +234,6 @@ pub struct Attachment {
     pub size: Option<i64>,
     pub additional_properties: Option<AdditionalProperties>,
     pub checksum: Option<Checksum3>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TagsOfAttatchment {
-    pub tag: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
 use indicatif::{ParallelProgressIterator, ProgressBar};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use reqwest::{cookie::Jar, Client, Url};
@@ -9,7 +9,10 @@ use std::convert::TryInto;
 
 use crate::{
     constants,
-    types::{episodes::EpisodesData, oof},
+    types::{
+        episodes::{EpisodesData, TrackType},
+        oof,
+    },
 };
 
 pub async fn get_episodes(
@@ -28,11 +31,19 @@ pub async fn get_episodes(
         uuid = uuid.to_string()
     );
 
+    if verbosity > 0 {
+        println!("Using URL: {}", &url);
+    }
+
     let text = client.get(url).send().await?.text().await?;
 
     serde_json::from_str(&text).map_err(|e| {
-        if verbosity >= 1 {
+        if verbosity >= 2 {
             println!("{}", &text);
+        }
+
+        if verbosity >= 1 {
+            println!("Full error:\n{}", e);
         }
 
         if serde_json::from_str::<oof::Root>(&text).is_ok() {
@@ -55,34 +66,31 @@ pub fn make_client(token: &str) -> Result<Client> {
 pub fn extract_course_data(data: &EpisodesData) -> Result<Course> {
     println!("Extracting data...");
 
-    let pb = ProgressBar::new(data.search_results.result.len().try_into().unwrap());
-
-    let videos = data
-        .search_results
-        .result
-        .par_iter()
-        .progress_with(pb)
-        .map(|result| Video {
-            url: &result
-                .mediapackage
-                .media
-                .track
-                .iter()
-                .find(|track| {
-                    track.mimetype == constants::MP4_MIME
-                        && track
-                            .tags
-                            .tag
-                            .contains(&constants::HIGH_QUALITY.to_string())
-                })
-                .unwrap()
-                .url,
-            title: &result.mediapackage.title,
-            id: &result.id,
-        })
-        .collect();
-
     let first = data.search_results.result.get(0).unwrap();
+
+    // TODO implement progress bar or remove it
+    // let pb = ProgressBar::new(data.search_results.result.len().try_into().unwrap());
+
+    let mut videos = Vec::new();
+
+    for result in &data.search_results.result {
+        let tracks = result.mediapackage.media.track.iter().filter(|track| {
+            track.mimetype == constants::MP4_MIME
+                && track
+                    .tags
+                    .tag
+                    .contains(&constants::HIGH_QUALITY.to_string())
+        });
+
+        for track in tracks {
+            videos.push(Video {
+                url: &track.url,
+                title: &result.mediapackage.title,
+                id: &result.id,
+                video_type: track.type_field,
+            });
+        }
+    }
 
     let course = Course {
         title: &first.mediapackage.seriestitle,
@@ -98,6 +106,7 @@ pub struct Video<'a> {
     pub url: &'a str,
     pub title: &'a str,
     pub id: &'a str,
+    pub video_type: TrackType,
 }
 
 #[derive(Debug, Serialize)]
