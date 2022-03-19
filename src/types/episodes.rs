@@ -31,7 +31,14 @@ where
         More(Vec<Result>),
     }
 
-    Ok(match OneOrMore::deserialize(deserializer)? {
+    // Attempts de-serialization
+    let one_or_more = match serde_path_to_error::deserialize(deserializer) {
+        Ok(one_or_more_deserialized) => one_or_more_deserialized,
+        Err(err) => panic!("Full error path: {}", err.path()),
+    };
+
+    // If we got one object instead of a vector, wrap it in a vector
+    Ok(match one_or_more {
         OneOrMore::One(the_one) => vec![the_one],
         OneOrMore::More(the_more) => the_more,
     })
@@ -63,7 +70,10 @@ pub struct Result {
     // TODO uncomment the lines below
     // pub dc_extent: i64,
     // pub dc_title: String,
+    // pub dc_creator: Option<String>,
+    // pub dc_publisher: Option<String>,
     // pub dc_created: String,
+    // pub dc_spatial: String,
     // pub dc_is_part_of: String,
     // pub oc_mediapackage: String,
     // pub media_type: String,
@@ -71,8 +81,6 @@ pub struct Result {
     // pub modified: String,
     // pub score: f64,
     // pub segments: Option<Segments>,
-    // pub dc_creator: Option<String>,
-    // pub dc_spatial: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -132,6 +140,8 @@ pub enum TrackType {
     Presenter,
     #[serde(rename = "presentation/delivery")]
     Presentation,
+    #[serde(rename = "raw/delivery")]
+    Raw,
 }
 
 impl Default for TrackType {

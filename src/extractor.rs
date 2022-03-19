@@ -37,13 +37,14 @@ pub async fn get_episodes(
 
     let text = client.get(url).send().await?.text().await?;
 
-    serde_json::from_str(&text).map_err(|e| {
+    let parsed = serde_path_to_error::deserialize(&mut serde_json::Deserializer::from_str(&text));
+    parsed.map_err(|e| {
         if verbosity >= 2 {
             println!("{}", &text);
         }
 
         if verbosity >= 1 {
-            println!("Full error:\n{}", e);
+            println!("Full error:\n{}", e.path());
         }
 
         if serde_json::from_str::<oof::Root>(&text).is_ok() {

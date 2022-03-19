@@ -108,6 +108,7 @@ impl Display for TrackType {
         let lower = match self {
             TrackType::Presenter => "presenter",
             TrackType::Presentation => "presentation",
+            TrackType::Raw => "raw",
         };
 
         f.write_str(lower)

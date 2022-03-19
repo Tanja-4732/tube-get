@@ -4,5 +4,16 @@
     "indicatif",
     "reqwest",
     "seriestitle"
-  ]
+  ],
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true,
+    "**/.hg/store/**": true,
+    "**/.bloop": true,
+    "**/.metals": true,
+    "**/.ammonite": true,
+    ".flatpak/**": true,
+    "_build/**": true
+  }
 }
