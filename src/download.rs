@@ -1,5 +1,5 @@
 use anyhow::Result;
-use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use indicatif::{HumanBytes, HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 use io::Write;
 use reqwest::Client;
 
@@ -82,13 +82,16 @@ pub fn download_course<'a>(
                 writer.write_all(&chunk)?; // Write chunk to output file
             }
 
-            progress_bar.finish_with_message(video.title.to_owned() + " done");
+            let elapsed = HumanDuration(progress_bar.elapsed());
+            let downloaded = HumanBytes(progress_bar.position());
+
+            progress_bar.finish_and_clear();
 
             writer.flush()?;
 
             count += 1;
             main_pb.println(format!(
-                "  Finished {:2}/{:2}: {}",
+                "  Finished {:2}/{:2}, {downloaded} in {elapsed}: {}",
                 count,
                 course.videos.len() + cli_options.skip_count.unwrap_or(0) as usize,
                 video.title
