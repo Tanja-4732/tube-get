@@ -1,11 +1,7 @@
-use anyhow::{anyhow, bail, Result};
-use indicatif::{ParallelProgressIterator, ProgressBar};
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use anyhow::{anyhow, Result};
 use reqwest::{cookie::Jar, Client, Url};
 use serde::Serialize;
 use uuid::Uuid;
-
-use std::convert::TryInto;
 
 use crate::{
     constants,

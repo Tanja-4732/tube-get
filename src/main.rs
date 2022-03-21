@@ -1,17 +1,13 @@
+use std::sync::Arc;
+
+use anyhow::Result;
+use indicatif::MultiProgress;
+
 mod cli;
 mod constants;
 mod download;
 mod extractor;
 mod types;
-
-use std::{
-    borrow::BorrowMut,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
-
-use anyhow::Result;
-use indicatif::MultiProgress;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -46,18 +42,6 @@ async fn main() -> Result<()> {
     let course = extractor::extract_course_data(&episodes_data)?;
 
     if !cli_options.no_download {
-        // let multi_bar = Arc::new(Mutex::new(Box::leak(Box::new(MultiProgress::new()))));
-        // let cli_options = Box::leak(Box::new(cli_options.clone()));
-        // let course = Box::leak(Box::new(course.clone()));
-
-        // let jh = tokio::spawn(async move {
-        //     let ft = download::download_course(&cli_options, &course, &multi_bar.clone());
-        //     ft.await;
-        // });
-
-        // let multi_bar = MultiProgress::new();
-        // let jh = download::download_course(&cli_options, &course, &multi_bar);
-
         let multi_bar = Arc::new(MultiProgress::new());
         let jh = tokio::spawn(download::download_course(
             cli_options,
@@ -66,12 +50,10 @@ async fn main() -> Result<()> {
         ));
 
         multi_bar.join()?;
-        jh.await;
+        jh.await??;
     } else {
         println!("{:#?}", course);
     }
-
-    // download::progress();
 
     Ok(())
 }
