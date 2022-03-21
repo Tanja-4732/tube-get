@@ -4,7 +4,14 @@ mod download;
 mod extractor;
 mod types;
 
+use std::{
+    borrow::BorrowMut,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
+
 use anyhow::Result;
+use indicatif::MultiProgress;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -25,7 +32,7 @@ async fn main() -> Result<()> {
     // Try to extract the desired configuration from the arg-matches
     let cli_options = cli::get_options(&matches)?;
 
-    let client = extractor::make_client(cli_options.token)?;
+    let client = extractor::make_client(&cli_options.token)?;
 
     let episodes_data = extractor::get_episodes(
         &client,
@@ -39,7 +46,27 @@ async fn main() -> Result<()> {
     let course = extractor::extract_course_data(&episodes_data)?;
 
     if !cli_options.no_download {
-        download::download_course(&cli_options, &course).await?;
+        // let multi_bar = Arc::new(Mutex::new(Box::leak(Box::new(MultiProgress::new()))));
+        // let cli_options = Box::leak(Box::new(cli_options.clone()));
+        // let course = Box::leak(Box::new(course.clone()));
+
+        // let jh = tokio::spawn(async move {
+        //     let ft = download::download_course(&cli_options, &course, &multi_bar.clone());
+        //     ft.await;
+        // });
+
+        // let multi_bar = MultiProgress::new();
+        // let jh = download::download_course(&cli_options, &course, &multi_bar);
+
+        let multi_bar = Arc::new(MultiProgress::new());
+        let jh = tokio::spawn(download::download_course(
+            cli_options,
+            course,
+            Arc::clone(&multi_bar),
+        ));
+
+        multi_bar.join()?;
+        jh.await;
     } else {
         println!("{:#?}", course);
     }

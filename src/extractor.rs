@@ -26,8 +26,6 @@ pub async fn get_episodes(
 
     let url = format!(
         "https://tube.tugraz.at/search/episode.json?limit={limit}&offset={offset}&sid={uuid}",
-        limit = limit,
-        offset = offset,
         uuid = uuid.to_string()
     );
 
@@ -39,8 +37,8 @@ pub async fn get_episodes(
 
     let parsed = serde_path_to_error::deserialize(&mut serde_json::Deserializer::from_str(&text));
     parsed.map_err(|e| {
-        if verbosity >= 2 {
-            println!("{}", &text);
+        if verbosity >= 4 {
+            println!("---Begin of full text dump---\n{text}\n---End of full text dump---");
         }
 
         if verbosity >= 1 {
@@ -85,34 +83,49 @@ pub fn extract_course_data(data: &EpisodesData) -> Result<Course> {
 
         for track in tracks {
             videos.push(Video {
-                url: &track.url,
-                title: &result.mediapackage.title,
-                id: &result.id,
+                url: track.url.to_owned(), // TODO change this back to a borrow
+                title: result.mediapackage.title.to_owned(), // TODO change this back to a borrow
+                id: result.id.to_owned(),  // TODO change this back to a borrow
                 video_type: track.type_field,
             });
         }
     }
 
     let course = Course {
-        title: &first.mediapackage.seriestitle,
-        id: &first.mediapackage.series,
+        title: first.mediapackage.seriestitle.to_owned(), // TODO change this back to a borrow
+        id: first.mediapackage.series.to_owned(),         // TODO change this back to a borrow
         videos,
     };
 
     Ok(course)
 }
 
-#[derive(Debug, Serialize)]
-pub struct Video<'a> {
-    pub url: &'a str,
-    pub title: &'a str,
-    pub id: &'a str,
+// #[derive(Debug, Serialize, Clone)]
+// pub struct Video<'a> {
+//     pub url: &'a str,
+//     pub title: &'a str,
+//     pub id: &'a str,
+//     pub video_type: TrackType,
+// }
+
+// #[derive(Debug, Serialize, Clone)]
+// pub struct Course<'a> {
+//     pub title: &'a str,
+//     pub id: &'a str,
+//     pub videos: Vec<Video<'a>>,
+// }
+
+#[derive(Debug, Serialize, Clone)]
+pub struct Video {
+    pub url: String,
+    pub title: String,
+    pub id: String,
     pub video_type: TrackType,
 }
 
-#[derive(Debug, Serialize)]
-pub struct Course<'a> {
-    pub title: &'a str,
-    pub id: &'a str,
-    pub videos: Vec<Video<'a>>,
+#[derive(Debug, Serialize, Clone)]
+pub struct Course {
+    pub title: String,
+    pub id: String,
+    pub videos: Vec<Video>,
 }

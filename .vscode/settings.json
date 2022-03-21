@@ -1,9 +1,10 @@
 {
   "cSpell.words": [
-    "JSESSIONID",
     "indicatif",
+    "JSESSIONID",
     "reqwest",
-    "seriestitle"
+    "seriestitle",
+    "tokio"
   ],
   "files.watcherExclude": {
     "**/.git/objects/**": true,
