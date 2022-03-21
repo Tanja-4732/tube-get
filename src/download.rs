@@ -20,8 +20,11 @@ pub fn download_course<'a>(
 ) -> impl Future<Output = Result<()>> + 'a {
     let main_pb = multi_bar.add(ProgressBar::new(course.videos.len() as u64));
 
-    main_pb.set_style(ProgressStyle::default_bar().template("{msg} {bar:10} {pos}/{len}"));
-    main_pb.set_message("total  ");
+    main_pb.set_style(
+        ProgressStyle::default_bar().template(
+            &(String::new() + "[{elapsed_precise}] {wide_bar} Total progress: {pos}/{len}"),
+        ),
+    );
 
     main_pb.println(format!("Downloading course {}", course.title));
 
@@ -65,8 +68,9 @@ pub fn download_course<'a>(
                 ProgressBar::new(content_length)
                     .with_style(
                         ProgressStyle::default_bar()
-                            // .template("{bar:100.cyan} {pos:>4}/{len:4}")
-                            .template("{bar:100.cyan} {bytes}/{total_bytes} - {msg}")
+                            .template(
+                                "[{elapsed_precise}] {wide_bar:.cyan} {bytes}/{total_bytes} ({percent}%) - ETA {eta_precise} with {binary_bytes_per_sec} - {msg}"
+                            )
                             .progress_chars("█▉▊▋▌▍▎▏  "),
                     )
                     .with_message(video.title.to_owned()),
@@ -74,6 +78,7 @@ pub fn download_course<'a>(
 
             while let Some(chunk) = response.chunk().await? {
                 progress_bar.inc(chunk.len() as u64); // Increase ProgressBar by chunk size
+                main_pb.tick();
                 writer.write_all(&chunk)?; // Write chunk to output file
             }
 
