@@ -125,3 +125,18 @@ pub struct Course {
     pub id: String,
     pub videos: Vec<Video>,
 }
+
+mod test {
+    #[test]
+    fn test_get_episodes() {
+        use super::*;
+        use std::fs;
+        let text = fs::read_to_string("private/episodes_test.json").unwrap();
+
+        let parsed: anyhow::Result<EpisodesData> =
+            serde_path_to_error::deserialize(&mut serde_json::Deserializer::from_str(&text))
+                .map_err(anyhow::Error::from);
+
+        let data = parsed.unwrap();
+    }
+}

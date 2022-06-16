@@ -15,7 +15,7 @@ pub struct SearchResults {
     pub total: i64,
     pub search_time: i64,
     pub query: String,
-    #[serde(deserialize_with = "one_or_more_result")]
+    // #[serde(deserialize_with = "one_or_more_result")]
     pub result: Vec<Result>,
 }
 
@@ -38,10 +38,13 @@ where
     };
 
     // If we got one object instead of a vector, wrap it in a vector
+    // Ok(match OneOrMore::deserialize(deserializer)? {
     Ok(match one_or_more {
         OneOrMore::One(the_one) => vec![the_one],
         OneOrMore::More(the_more) => the_more,
     })
+
+    // Ok(Vec::<Result>::deserialize(deserializer)?)
 }
 
 fn one_or_more_string<'de, D>(deserializer: D) -> std::result::Result<Vec<String>, D::Error>
@@ -138,6 +141,8 @@ pub struct Track {
 pub enum TrackType {
     #[serde(rename = "presenter/delivery")]
     Presenter,
+    #[serde(rename = "presenter_video/delivery")]
+    PresenterNoAudio,
     #[serde(rename = "presentation/delivery")]
     Presentation,
     #[serde(rename = "raw/delivery")]

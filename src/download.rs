@@ -117,6 +117,7 @@ impl Display for TrackType {
             TrackType::Presenter => "presenter",
             TrackType::Presentation => "presentation",
             TrackType::Raw => "raw",
+            TrackType::PresenterNoAudio => "presenter_no_audio",
         };
 
         f.write_str(lower)

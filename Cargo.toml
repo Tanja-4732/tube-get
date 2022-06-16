@@ -1,6 +1,6 @@
 [package]
 name = "tube-get"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Bernd-L <git@bernd.pw>"]
 edition = "2021"
 
