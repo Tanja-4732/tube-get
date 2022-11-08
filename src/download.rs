@@ -17,6 +17,7 @@ pub fn download_course<'a>(
     cli_options: CliOptions,
     course: Course,
     multi_bar: Arc<MultiProgress>,
+    client: &Client,
 ) -> impl Future<Output = Result<()>> + 'a {
     let main_pb = multi_bar.add(ProgressBar::new(course.videos.len() as u64));
 
@@ -38,15 +39,15 @@ pub fn download_course<'a>(
 
     let mut count = cli_options.skip_count.unwrap_or(0) as usize;
 
+    let client = client.clone();
     async move {
+        let client = client;
         for video in course.videos.iter() {
             let file = fs::OpenOptions::new()
                 .create(true)
                 .write(true)
                 .append(false)
                 .open(folder_path.clone().join(create_video_file_name(video)))?;
-
-            let client = Client::new();
 
             let request = client.get(&video.url);
 

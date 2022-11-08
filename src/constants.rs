@@ -2,7 +2,7 @@
 pub const NAME: &str = "tube-get";
 
 /// The main author of the application
-pub const AUTHOR: &str = "Bernd-L <git@bernd.pw>";
+pub const AUTHOR: &str = "Tanja <git@tanja.pw>";
 
 /// The semantic-version string of the application
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -13,7 +13,7 @@ pub const ABOUT: &str =
 
 /// The licence notice (AGPL 3) of the application
 pub const LICENSE: &str = concat![
-    "Copyright 2021 Bernd-L; All rights reserved.\n",
+    "Copyright 2021 Tanja; All rights reserved.\n",
     "Licensed under the AGPL 3.0 <https://www.gnu.org/licenses/agpl-3.0.en.html>"
 ];
 

@@ -47,6 +47,7 @@ async fn main() -> Result<()> {
             cli_options,
             course,
             Arc::clone(&multi_bar),
+            &client,
         ));
 
         multi_bar.join()?;
