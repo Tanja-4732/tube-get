@@ -217,18 +217,9 @@ pub struct Catalog {
     pub mimetype: String,
     pub tags: Tags,
     pub url: String,
-    pub checksum: Option<Checksum2>,
+    pub checksum: Option<Checksum>,
     #[serde(rename = "ref")]
     pub ref_field: Option<String>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Checksum2 {
-    #[serde(rename = "type")]
-    pub type_field: String,
-    #[serde(rename = "$")]
-    pub field: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -250,16 +241,7 @@ pub struct Attachment {
     pub url: String,
     pub size: Option<i64>,
     pub additional_properties: Option<AdditionalProperties>,
-    pub checksum: Option<Checksum3>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Checksum3 {
-    #[serde(rename = "type")]
-    pub type_field: String,
-    #[serde(rename = "$")]
-    pub field: String,
+    pub checksum: Option<Checksum>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

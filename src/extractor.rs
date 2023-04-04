@@ -1,61 +1,72 @@
 use anyhow::{anyhow, Result};
-use reqwest::{cookie::Jar, Client, Url};
+use ocapi::{
+    client::{search::SearchParams, AuthToken, OcApi},
+    core::{
+        api::Api,
+        search::{self, EpisodesData},
+    },
+};
+use reqwest::{cookie::Jar, Url};
 use serde::Serialize;
 use uuid::Uuid;
 
 use crate::{
     constants,
-    types::{
-        episodes::{EpisodesData, TrackType},
-        oof,
-    },
+    types::{episodes::TrackType, oof},
 };
 
 pub async fn get_episodes(
-    client: &Client,
+    api: &OcApi,
     offset: u64,
     limit: u64,
-    uuid: Uuid,
+    series_uuid: Uuid,
     verbosity: u64,
 ) -> Result<EpisodesData> {
+    let limit = limit.to_string().into();
+    let offset = offset.to_string().into();
+    let series_uuid = series_uuid.to_string().into();
+
     println!("Fetch JSON from the API...");
 
-    let url = format!(
-        "https://tube.tugraz.at/search/episode.json?limit={limit}&offset={offset}&sid={uuid}",
-        uuid = uuid.to_string()
-    );
+    let params = SearchParams {
+        limit,
+        offset,
+        series_uuid,
+    };
 
+    // TODO remove this, move to the OcApi crate
     if verbosity > 0 {
-        println!("Using URL: {}", &url);
+        println!("Using URL: https://tube.tugraz.at/search/episode.json?limit={limit}&offset={offset}&sid={uuid}",
+        limit = params.limit.as_ref().unwrap(), offset = params.offset.as_ref().unwrap(), uuid = params.series_uuid.as_ref().unwrap());
     }
 
-    let text = client.get(url).send().await?.text().await?;
+    let episodes = api.search_episode(&params).await;
 
-    let parsed = serde_path_to_error::deserialize(&mut serde_json::Deserializer::from_str(&text));
-    parsed.map_err(|e| {
-        if verbosity >= 4 {
-            println!("---Begin of full text dump---\n{text}\n---End of full text dump---");
-        }
+    episodes.map_err(|e| {
+        // if verbosity >= 4 {
+        //     println!("---Begin of full text dump---\n{text}\n---End of full text dump---");
+        // }
 
-        if verbosity >= 1 {
-            println!("Full error:\n{}", e.path());
-        }
+        // if verbosity >= 1 {
+        //     println!("Full error:\n{}", e.path());
+        // }
 
-        if serde_json::from_str::<oof::Root>(&text).is_ok() {
-            anyhow!("Is your login token (still) valid? Please provide a recent JSESSIONID cookie.")
-        } else {
-            anyhow!("Couldn't parse JSON from the API. Unknown error: {}", e)
-        }
+        // if serde_json::from_str::<oof::Root>(&text).is_ok() {
+        //     anyhow!("Is your login token (still) valid? Please provide a recent JSESSIONID cookie.")
+        // } else {
+        //     anyhow!("Couldn't parse JSON from the API. Unknown error: {}", e)
+        // }
+
+        // TODO
+        anyhow!("Couldn't parse JSON from the API. Unknown error: {}", e)
     })
 }
 
-pub fn make_client(token: &str) -> Result<Client> {
-    let url = Url::parse(constants::BASE_URL)?;
-
-    let jar = Jar::default();
-    jar.add_cookie_str(&format!("JSESSIONID={}", token), &url);
-
-    Ok(Client::builder().cookie_provider(jar.into()).build()?)
+pub fn make_client(token: &str) -> OcApi {
+    OcApi::new(
+        constants::BASE_URL.to_string(),
+        AuthToken::new("JSESSIONID".to_string(), token.to_string()),
+    )
 }
 
 pub fn extract_course_data(data: &EpisodesData) -> Result<Course> {

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use indicatif::MultiProgress;
+use ocapi::client::{make_reqwest_client, AuthToken, OcApi};
 
 mod cli;
 mod constants;
@@ -47,7 +48,6 @@ async fn main() -> Result<()> {
             cli_options,
             course,
             Arc::clone(&multi_bar),
-            &client,
         ));
 
         multi_bar.join()?;
